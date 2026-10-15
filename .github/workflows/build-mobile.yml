@@ -18,11 +18,12 @@ jobs:
       - name: Checkout del Repositorio
         uses: actions/checkout@v4
 
-      - name: Configurar Java JDK 17
+      # CONFIGURACIÓN CORREGIDA A JAVA 21 CON SETUP-JAVA@V4
+      - name: Configurar Java JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: 17
+          java-version: '21'
 
       - name: Instalar Node.js 22
         uses: actions/setup-node@v4
@@ -32,7 +33,6 @@ jobs:
       - name: Instalar Dependencias (Ignorar Conflictos Peer)
         run: npm install --legacy-peer-deps
 
-      # PASO 1: Compilar Vite ANTES de cualquier comando de Capacitor
       - name: Compilar Frontend Vite (Generar carpetas dist y www)
         run: |
           npm run build
@@ -40,7 +40,6 @@ jobs:
           mkdir -p www
           cp -r dist/* www/
 
-      # PASO 2: Forzar configuracion de Capacitor y sincronizar con Android
       - name: Configurar y Sincronizar Capacitor con Android
         run: |
           # Asegurar que capacitor.config.json apunte a dist
@@ -60,7 +59,6 @@ jobs:
           # Sincronizar los assets compilados
           npx cap sync android
 
-      # PASO 3: Compilar el APK con Gradle
       - name: Compilar APK con Gradle
         run: |
           chmod +x android/gradlew
@@ -68,13 +66,11 @@ jobs:
           ./gradlew assembleRelease --no-daemon
           cd ..
 
-      # PASO 4: Mover el APK a la carpeta de artefactos
       - name: Renombrar APK para Release
         run: |
           mkdir -p release-artifacts
           find android/app/build/outputs/apk -name "*.apk" -exec cp {} release-artifacts/ZeusStreamDeck.apk \;
 
-      # PASO 5: Publicar APK en la Release de GitHub
       - name: Subir APK a Release de GitHub
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
