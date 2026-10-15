@@ -27,28 +27,28 @@ jobs:
           node-version: 20
           cache: 'npm'
 
-      - name: Instalar Dependencias del Host
-        run: |
-          cd desktop
-          npm ci || npm install
+      - name: Instalar Dependencias (Raíz)
+        run: npm ci || npm install
 
-      - name: Compilar Instalador NSIS con electron-builder
-        run: |
-          cd desktop
-          npx electron-builder --win --x64
+      - name: Compilar Frontend Web
+        run: npm run build
+
+      - name: Compilar Instalador con electron-builder
+        run: npx electron-builder --win --x64
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Renombrar Ejecutable para Release
         shell: bash
         run: |
-          mv desktop/dist/*.exe desktop/dist/ZeusStreamDeck-Setup.exe
+          mkdir -p release-artifacts
+          find dist* -maxdepth 2 -name "*.exe" -exec cp {} release-artifacts/ZeusStreamDeck-Setup.exe \; || cp dist/*.exe release-artifacts/ZeusStreamDeck-Setup.exe
 
       - name: Subir Instalador de PC a Artefactos
         uses: actions/upload-artifact@v4
         with:
           name: windows-installer
-          path: desktop/dist/ZeusStreamDeck-Setup.exe
+          path: release-artifacts/ZeusStreamDeck-Setup.exe
 
   # ========================================================
   # JOB 2: Compilar la Aplicación Móvil (Android .apk)
@@ -67,48 +67,44 @@ jobs:
           distribution: 'zulu'
           java-version: 17
 
-      - name: Instalar Android SDK Tools
-        uses: android-actions/setup-android@v3
-
       - name: Instalar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
-      - name: Instalar Dependencias del Móvil
-        run: |
-          cd mobile
-          npm ci || npm install
+      - name: Instalar Dependencias (Raíz)
+        run: npm ci || npm install
 
       - name: Compilar Frontend React (Vite)
-        run: |
-          cd mobile
-          npm run build
+        run: npm run build
 
       - name: Sincronizar Assets con Capacitor Android
         run: |
-          cd mobile
+          if [ ! -d "android" ]; then
+            npx cap add android || true
+          fi
           npx cap sync android
 
-      - name: Dar permisos de ejecución a Gradle
+      - name: Compilar APK con Gradle (SDK Nativo de GitHub)
         run: |
-          chmod +x mobile/android/gradlew
-
-      - name: Compilar APK con Gradle
-        run: |
-          cd mobile/android
-          ./gradlew assembleRelease
+          if [ -f "android/gradlew" ]; then
+            chmod +x android/gradlew
+            cd android
+            ./gradlew assembleRelease
+            cd ..
+          fi
 
       - name: Renombrar APK para Release
         run: |
-          cp mobile/android/app/build/outputs/apk/release/app-release-unsigned.apk ZeusStreamDeck.apk || cp mobile/android/app/build/outputs/apk/release/app-release.apk ZeusStreamDeck.apk
+          mkdir -p release-artifacts
+          find android/app/build/outputs/apk -name "*.apk" -exec cp {} release-artifacts/ZeusStreamDeck.apk \; || cp android/app/build/outputs/apk/release/*.apk release-artifacts/ZeusStreamDeck.apk
 
       - name: Subir APK a Artefactos
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          path: ZeusStreamDeck.apk
+          path: release-artifacts/ZeusStreamDeck.apk
 
   # ========================================================
   # JOB 3: Publicar Release Oficial en GitHub
