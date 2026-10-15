@@ -21,6 +21,15 @@
     "directories": {
       "output": "dist-electron"
     },
+    "files": [
+      "electron-main.cjs",
+      "server.js",
+      "dist/**/*",
+      "package.json"
+    ],
+    "extraMetadata": {
+      "main": "electron-main.cjs"
+    },
     "win": {
       "target": "nsis",
       "requestedExecutionLevel": "requireAdministrator"

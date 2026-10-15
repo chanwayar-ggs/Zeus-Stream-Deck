@@ -18,10 +18,10 @@ jobs:
       - name: Checkout del Repositorio
         uses: actions/checkout@v4
 
-      - name: Instalar Node.js
+      - name: Instalar Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Instalar Dependencias (Ignorar Conflictos Peer)
         run: npm install --legacy-peer-deps
