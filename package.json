@@ -5,7 +5,7 @@
   "author": "Zeus Stream Deck Community",
   "private": true,
   "type": "module",
-  "main": "electron-main.cjs",
+  "main": "server.js",
   "scripts": {
     "dev": "tsx server.ts",
     "start": "node server.js",
@@ -21,14 +21,14 @@
     "directories": {
       "output": "dist-electron"
     },
+    "asar": false,
     "files": [
-      "electron-main.cjs",
       "server.js",
       "dist/**/*",
       "package.json"
     ],
     "extraMetadata": {
-      "main": "electron-main.cjs"
+      "main": "server.js"
     },
     "win": {
       "target": "nsis",

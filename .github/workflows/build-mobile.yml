@@ -32,9 +32,11 @@ jobs:
       - name: Instalar Dependencias (Ignorar Conflictos Peer)
         run: npm install --legacy-peer-deps
 
-      - name: Compilar Frontend React (Vite)
+      # PASO CLAVE: Compilación previa de Vite para que exista la carpeta 'dist'
+      - name: Compilar Frontend Vite (Generar carpeta dist)
         run: npm run build
 
+      # Sincronización de Capacitor una vez que 'dist' ya existe
       - name: Sincronizar Assets con Capacitor Android
         run: |
           if [ ! -d "android" ]; then
