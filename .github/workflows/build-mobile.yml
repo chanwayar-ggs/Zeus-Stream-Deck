@@ -32,18 +32,35 @@ jobs:
       - name: Instalar Dependencias (Ignorar Conflictos Peer)
         run: npm install --legacy-peer-deps
 
-      # PASO CLAVE: Compilación previa de Vite para que exista la carpeta 'dist'
-      - name: Compilar Frontend Vite (Generar carpeta dist)
-        run: npm run build
-
-      # Sincronización de Capacitor una vez que 'dist' ya existe
-      - name: Sincronizar Assets con Capacitor Android
+      # PASO 1: Compilar Vite ANTES de cualquier comando de Capacitor
+      - name: Compilar Frontend Vite (Generar carpetas dist y www)
         run: |
+          npm run build
+          # Salvaguarda: duplicar dist a www para que Capacitor siempre encuentre los assets
+          mkdir -p www
+          cp -r dist/* www/
+
+      # PASO 2: Forzar configuracion de Capacitor y sincronizar con Android
+      - name: Configurar y Sincronizar Capacitor con Android
+        run: |
+          # Asegurar que capacitor.config.json apunte a dist
+          cat << 'EOF' > capacitor.config.json
+          {
+            "appId": "com.zeus.streamdeck",
+            "appName": "Zeus Stream Deck",
+            "webDir": "dist"
+          }
+          EOF
+
+          # Si no existe la carpeta android, agregar la plataforma
           if [ ! -d "android" ]; then
             npx cap add android
           fi
+
+          # Sincronizar los assets compilados
           npx cap sync android
 
+      # PASO 3: Compilar el APK con Gradle
       - name: Compilar APK con Gradle
         run: |
           chmod +x android/gradlew
@@ -51,11 +68,13 @@ jobs:
           ./gradlew assembleRelease --no-daemon
           cd ..
 
+      # PASO 4: Mover el APK a la carpeta de artefactos
       - name: Renombrar APK para Release
         run: |
           mkdir -p release-artifacts
           find android/app/build/outputs/apk -name "*.apk" -exec cp {} release-artifacts/ZeusStreamDeck.apk \;
 
+      # PASO 5: Publicar APK en la Release de GitHub
       - name: Subir APK a Release de GitHub
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
