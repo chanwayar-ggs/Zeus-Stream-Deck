@@ -1,0 +1,55 @@
+name: Build PC (Windows .exe)
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-desktop:
+    name: Build Windows Host (.exe)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout del Repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar Dependencias (Ignorar Conflictos Peer)
+        run: npm install --legacy-peer-deps
+
+      - name: Compilar Frontend Web
+        run: npm run build
+
+      - name: Compilar Instalador con electron-builder
+        run: npx electron-builder --win --x64
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Renombrar Ejecutable para Release
+        shell: bash
+        run: |
+          mkdir -p release-artifacts
+          find dist-electron -name "*.exe" -exec cp {} release-artifacts/ZeusStreamDeck-Setup.exe \; || find dist* -name "*.exe" -exec cp {} release-artifacts/ZeusStreamDeck-Setup.exe \;
+
+      - name: Subir Instalador a Release de GitHub
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: release-artifacts/ZeusStreamDeck-Setup.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Subir Artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: release-artifacts/ZeusStreamDeck-Setup.exe
