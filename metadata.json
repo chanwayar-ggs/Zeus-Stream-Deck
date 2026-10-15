@@ -1,0 +1,6 @@
+{
+  "name": "Zeus Stream Deck",
+  "description": "Alternativa Open Source a Elgato Stream Deck para controlar OBS Studio, audio anti-copyright, escenas y atajos de teclado desde el móvil por WebSockets.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

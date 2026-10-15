@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Zeus Stream Deck</string>
+    <string name="title_activity_main">Zeus Stream Deck</string>
+    <string name="package_name">com.zeus.streamdeck</string>
+    <string name="custom_url_scheme">com.zeus.streamdeck</string>
+</resources>
