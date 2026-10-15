@@ -25,10 +25,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
 
-      - name: Instalar Dependencias (Raíz)
-        run: npm ci || npm install
+      - name: Instalar Dependencias (Legacy Peer Deps)
+        run: npm install --legacy-peer-deps
 
       - name: Compilar Frontend Web
         run: npm run build
@@ -71,10 +70,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
 
-      - name: Instalar Dependencias (Raíz)
-        run: npm ci || npm install
+      - name: Instalar Dependencias (Legacy Peer Deps)
+        run: npm install --legacy-peer-deps
 
       - name: Compilar Frontend React (Vite)
         run: npm run build
@@ -86,7 +84,7 @@ jobs:
           fi
           npx cap sync android
 
-      - name: Compilar APK con Gradle (SDK Nativo de GitHub)
+      - name: Compilar APK con Gradle
         run: |
           if [ -f "android/gradlew" ]; then
             chmod +x android/gradlew
